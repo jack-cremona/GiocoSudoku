@@ -1,155 +1,126 @@
 ﻿using System;
-using System.Text;
 
 namespace GiocoSudoku
 {
     internal class Griglia
     {
         public Casella[,] Matrice = new Casella[9, 9];
-
-        private Controllore controllore;
-
-        private int[] valori =
-        {
+        private int[] valoriIniziali = {
             5, 3, 0, 0, 7, 0, 0, 0, 0, 6, 0, 0, 1, 9, 5, 0, 0, 0, 0, 9, 8, 0, 0, 0, 0, 6, 0, 8, 0, 0, 0, 6, 0, 0, 0, 3, 4, 0, 0, 8, 0, 3, 0, 0, 1, 7, 0, 0, 0, 2, 0, 0, 0, 6, 0, 6, 0, 0, 0, 0, 2, 8, 0, 0, 0, 0, 4, 1, 9, 0, 0, 5, 0, 0, 0, 0, 8, 0, 0, 7, 9
         };
 
         public Griglia()
         {
-            // Usa cicli for classici per gestire gli indici da 0 a 8
-            for (int i = 0; i < 9; i++) // Riga
-            {
-                for (int j = 0; j < 9; j++) // Colonna
-                {
-                    // Calcola l'indice lineare: (riga * 9) + colonna
-                    int indiceLineare = i * 9 + j;
-                    int valoreCorrente = valori[indiceLineare];
-
-                    Matrice[i, j] = new Casella(valoreCorrente, i, j);
-                }
-            }
-
-            controllore = new Controllore();
+            for (int i = 0; i < 9; i++)
+                for (int j = 0; j < 9; j++)
+                    Matrice[i, j] = new Casella(valoriIniziali[i * 9 + j], i, j);
         }
 
         public void Gioca()
         {
-            int rigaCursore = 0;
-            int colonnaCursore = 0;
-            bool giocoAttivo = true;
+            int r = 0, c = 0;
+            string messaggioFeedback = "";
 
-            while (giocoAttivo)
+            while (true)
             {
                 Console.Clear();
-                StampaGrigliaCursor(rigaCursore, colonnaCursore);
-                Console.WriteLine("\n╔════════════════════════════════════════╗");
-                Console.WriteLine("║  Frecce: Naviga │ Numero: Inserisci   ║");
-                Console.WriteLine("║  0: Cancella    │ E: Esci dal gioco   ║");
-                Console.WriteLine("╚════════════════════════════════════════╝");
+                StampaGriglia(r, c);
 
-                ConsoleKeyInfo key = Console.ReadKey(true);
+                // Mostra eventuale messaggio di feedback dal controllo manuale
+                if (!string.IsNullOrEmpty(messaggioFeedback))
+                {
+                    Console.WriteLine(messaggioFeedback);
+                    messaggioFeedback = ""; // Reset dopo la stampa
+                }
 
-                if (key.Key == ConsoleKey.UpArrow)
-                {
-                    rigaCursore = (rigaCursore - 1 + 9) % 9;
-                }
-                else if (key.Key == ConsoleKey.DownArrow)
-                {
-                    rigaCursore = (rigaCursore + 1) % 9;
-                }
-                else if (key.Key == ConsoleKey.LeftArrow)
-                {
-                    colonnaCursore = (colonnaCursore - 1 + 9) % 9;
-                }
-                else if (key.Key == ConsoleKey.RightArrow)
-                {
-                    colonnaCursore = (colonnaCursore + 1) % 9;
-                }
+                var key = Console.ReadKey(true);
+
+                // Movimento
+                if (key.Key == ConsoleKey.UpArrow) r = (r - 1 + 9) % 9;
+                else if (key.Key == ConsoleKey.DownArrow) r = (r + 1) % 9;
+                else if (key.Key == ConsoleKey.LeftArrow) c = (c - 1 + 9) % 9;
+                else if (key.Key == ConsoleKey.RightArrow) c = (c + 1) % 9;
+
+                // Inserimento numeri
                 else if (key.KeyChar >= '0' && key.KeyChar <= '9')
                 {
-                    int numero = int.Parse(key.KeyChar.ToString());
+                    if (Matrice[r, c].Modificabile)
+                        Matrice[r, c].Valore = int.Parse(key.KeyChar.ToString());
 
-                    if (!Matrice[rigaCursore, colonnaCursore].Modificabile)
-                    {
-                        Console.Beep();
-                        Console.WriteLine("\n❌ Questa cella non è modificabile!");
-                        System.Threading.Thread.Sleep(1500);
-                    }
-                    else
-                    {
-                        Matrice[rigaCursore, colonnaCursore].Valore = numero;
-                    }
-
+                    // Controllo automatico vittoria (griglia piena e corretta)
                     if (Controllore.IsValidSudoku(Matrice))
                     {
                         Console.Clear();
-                        StampaGriglia();
-                        Console.WriteLine("\n╔════════════════════════════════════════╗");
-                        Console.WriteLine("║      🎉 HAI VINTO! 🎉                  ║");
-                        Console.WriteLine("║    Complimenti, hai risolto il Sudoku! ║");
-                        Console.WriteLine("╚════════════════════════════════════════╝");
-                        System.Threading.Thread.Sleep(2000);
-                        giocoAttivo = false;
+                        StampaGriglia(-1, -1);
+                        Console.WriteLine("\n🎉 COMPLIMENTI! HAI VINTO!");
+                        break;
                     }
                 }
-                else if (key.Key == ConsoleKey.E)
+                // TASTO PER IL CONTROLLO MANUALE
+                else if (key.Key == ConsoleKey.C)
                 {
-                    giocoAttivo = false;
-                }
-            }
-        }
-
-        private void StampaGrigliaCursor(int rigaCursore, int colonnaCursore)
-        {
-            Console.WriteLine("╔═══════╦═══════╦═══════╗");
-            for (int i = 0; i < 9; i++)
-            {
-                Console.Write("║ ");
-                for (int j = 0; j < 9; j++)
-                {
-                    int val = Matrice[i, j].Valore;
-                    string valStr = val == 0 ? "-" : val.ToString();
-
-                    if (i == rigaCursore && j == colonnaCursore)
+                    if (Controllore.IsValidPartial(Matrice))
                     {
-                        Console.ForegroundColor = ConsoleColor.Black;
-                        Console.BackgroundColor = ConsoleColor.Yellow;
-                        Console.Write(valStr);
-                        Console.ResetColor();
-                    }
-                    else if (val != 0 && !Matrice[i, j].Modificabile)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.Write(valStr);
-                        Console.ResetColor();
-                    }
-                    else if (val != 0)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.Write(valStr);
-                        Console.ResetColor();
+                        messaggioFeedback = "✅ Al momento non ci sono errori!";
                     }
                     else
                     {
-                        Console.Write(valStr);
+                        Console.Beep();
+                        messaggioFeedback = "❌ Attenzione: ci sono dei numeri duplicati!";
                     }
-
-                    Console.Write(" ");
-
-                    if ((j + 1) % 3 == 0 && j < 8) Console.Write("║ ");
                 }
-                Console.Write("║");
-                Console.WriteLine();
-
-                if ((i + 1) % 3 == 0 && i < 8)
-                {
-                    Console.WriteLine("╠═══════╬═══════╬═══════╣");
-                }
+                else if (key.Key == ConsoleKey.E) break;
             }
-            Console.WriteLine("╚═══════╩═══════╩═══════╝");
         }
 
-        private void StampaGriglia()
+        public void Bot()
+        {
+            if (Risolvi(0, 0))
+            {
+                Console.Clear();
+                StampaGriglia(-1, -1);
+                Console.WriteLine("\nSudoku risolto dal Bot!");
+            }
+            else
+            {
+                Console.WriteLine("\nImpossibile risolvere questo Sudoku.");
+            }
+        }
+
+        private bool Risolvi(int r, int c)
+        {
+            if (r == 9) return true;
+            int nextR = (c == 8) ? r + 1 : r;
+            int nextC = (c == 8) ? 0 : c + 1;
+
+            if (Matrice[r, c].Valore != 0) return Risolvi(nextR, nextC);
+
+            for (int num = 1; num <= 9; num++)
+            {
+                if (IsSafe(r, c, num))
+                {
+                    Matrice[r, c].Valore = num;
+                    if (Risolvi(nextR, nextC)) return true;
+                    Matrice[r, c].Valore = 0;
+                }
+            }
+            return false;
+        }
+
+        private bool IsSafe(int r, int c, int num)
+        {
+            for (int i = 0; i < 9; i++)
+            {
+                if (Matrice[r, i].Valore == num || Matrice[i, c].Valore == num) return false;
+            }
+            int rs = (r / 3) * 3, cs = (c / 3) * 3;
+            for (int i = rs; i < rs + 3; i++)
+                for (int j = cs; j < cs + 3; j++)
+                    if (Matrice[i, j].Valore == num) return false;
+            return true;
+        }
+
+        private void StampaGriglia(int curR, int curC)
         {
             Console.WriteLine("╔═══════╦═══════╦═══════╗");
             for (int i = 0; i < 9; i++)
@@ -157,24 +128,32 @@ namespace GiocoSudoku
                 Console.Write("║ ");
                 for (int j = 0; j < 9; j++)
                 {
-                    int val = Matrice[i, j].Valore;
-                    Console.ForegroundColor = Matrice[i, j].Modificabile ? ConsoleColor.Green : ConsoleColor.Cyan;
-                    Console.Write(val + " ");
+                    if (i == curR && j == curC)
+                    {
+                        Console.BackgroundColor = ConsoleColor.Yellow;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = Matrice[i, j].Modificabile ? ConsoleColor.Green : ConsoleColor.Cyan;
+                    }
+
+                    string v = Matrice[i, j].Valore == 0 ? "." : Matrice[i, j].Valore.ToString();
+                    Console.Write(v + " ");
                     Console.ResetColor();
 
                     if ((j + 1) % 3 == 0 && j < 8) Console.Write("║ ");
                 }
-                Console.Write("║");
-                Console.WriteLine();
-
-                if ((i + 1) % 3 == 0 && i < 8)
-                {
-                    Console.WriteLine("╠═══════╬═══════╬═══════╣");
-                }
+                Console.WriteLine("║");
+                if ((i + 1) % 3 == 0 && i < 8) Console.WriteLine("╠═══════╬═══════╬═══════╣");
             }
             Console.WriteLine("╚═══════╩═══════╩═══════╝");
-        }
-           
 
+            Console.WriteLine("\n╔════════════════════════════════════════╗");
+            Console.WriteLine("║  FRECCE: Muoviti   │ NUMERI: Inserisci ║");
+            Console.WriteLine("║  0: Cancella       │ C: Controlla      ║"); // <--- AGGIUNTO C
+            Console.WriteLine("║  E: Esci al Menu   │                   ║");
+            Console.WriteLine("╚════════════════════════════════════════╝");
+        }
     }
 }

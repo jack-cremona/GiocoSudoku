@@ -1,68 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace GiocoSudoku
 {
     internal class Controllore
     {
-        // Implementazione futura del controllore del gioco Sudoku
-
-        //Primo numero matricce = numero righe , secondo numero = numero colonne
-
-        public Controllore() {}
-
-        public static bool IsValidSudoku(int[,] matrice)
+        public static bool IsValidSudoku(Casella[,] matrice)
         {
-            // 1. Controllo Righe e Colonne simultaneamente
+            // 1. Controllo che non ci siano celle vuote (per la vittoria)
+            foreach (var c in matrice) if (c.Valore == 0) return false;
+
+            // 2. Controllo Righe, Colonne e Quadranti per duplicati
             for (int i = 0; i < 9; i++)
             {
-                if (!IsValidSequence(GetRiga(matrice, i)) || !IsValidSequence(GetColonna(matrice, i)))
+                if (!IsSequenceValid(GetRiga(matrice, i)) ||
+                    !IsSequenceValid(GetColonna(matrice, i)) ||
+                    !IsSequenceValid(GetSquare(matrice, i)))
                     return false;
             }
-
-            // 2. Controllo Sottogriglie 3x3
-            for (int riga = 0; riga < 9; riga += 3)
-            {
-                for (int col = 0; col < 9; col += 3)
-                {
-                    if (!IsValidSequence(GetSquare(matrice, riga, col)))
-                        return false;
-                }
-            }
-
             return true;
         }
 
-        // Verifica se una sequenza di 9 numeri ha duplicati (escludendo lo 0)
-        private static bool IsValidSequence(IEnumerable<int> sequence)
+        public static bool IsValidPartial(Casella[,] matrice)
+        {
+            for (int i = 0; i < 9; i++)
+            {
+                // Se una riga, colonna o quadrato ha duplicati, non è valido
+                if (!IsSequenceValid(GetRiga(matrice, i)) ||
+                    !IsSequenceValid(GetColonna(matrice, i)) ||
+                    !IsSequenceValid(GetSquare(matrice, i)))
+                    return false;
+            }
+            return true;
+        }
+        private static bool IsSequenceValid(IEnumerable<int> sequence)
         {
             var nums = sequence.Where(n => n != 0).ToList();
             return nums.Count == nums.Distinct().Count();
         }
 
-        // Estrae una riga
-        private static IEnumerable<int> GetRiga(int[,] matrice, int riga)
+        private static IEnumerable<int> GetRiga(Casella[,] m, int r)
         {
-            for (int col = 0; col < 9; col++) yield return matrice[riga, col];
+            for (int c = 0; c < 9; c++) yield return m[r, c].Valore;
         }
 
-        // Estrae una colonna
-        private static IEnumerable<int> GetColonna(int[,] matrice, int col)
+        private static IEnumerable<int> GetColonna(Casella[,] m, int c)
         {
-            for (int riga = 0; riga < 9; riga++) yield return matrice[riga, col];
+            for (int r = 0; r < 9; r++) yield return m[r, c].Valore;
         }
 
-        // Estrae un quadrante 3x3
-        private static IEnumerable<int> GetSquare(int[,] matrice, int startRiga, int startCol)
+        private static IEnumerable<int> GetSquare(Casella[,] m, int k)
         {
-            for (int riga = 0; riga < 3; riga++)
-            {
-                for (int col = 0; col < 3; col++)
-                {
-                    yield return matrice[startRiga + riga, startCol + col];
-                }
-            }
+            int rStart = (k / 3) * 3;
+            int cStart = (k % 3) * 3;
+            for (int r = rStart; r < rStart + 3; r++)
+                for (int c = cStart; c < cStart + 3; c++)
+                    yield return m[r, c].Valore;
         }
     }
 }
