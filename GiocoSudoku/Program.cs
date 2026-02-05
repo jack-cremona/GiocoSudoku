@@ -11,7 +11,7 @@ namespace GiocoSudoku
         {
             while (true)
             {
-                string[] opzioni = { "=> Gioca", "=> Esci" };
+                string[] opzioni = { "=> Gioca", "=> Esci" ,"=> Fai giocare il bot"};
                 int sceltaIndice = 0;
                 bool selezionato = false;
 
@@ -59,7 +59,7 @@ namespace GiocoSudoku
                 {
                     Console.Clear();
                     Griglia griglia = new Griglia();
-                   // griglia.StringaGriglia();
+                    // griglia.StringaGriglia();
                     griglia.Gioca();
                     Console.WriteLine("\nPremi un tasto per tornare al menu...");
                     Console.ReadKey(true);
@@ -69,6 +69,14 @@ namespace GiocoSudoku
                     Console.Clear();
                     Console.WriteLine("Arrivederci!");
                     break;
+                }
+                else if (sceltaIndice == 2)
+                {
+                    Console.Clear();
+                    Griglia griglia = new Griglia();
+                    //griglia.bot();
+                    Console.WriteLine("\nIl bot sta completando il gioco...");
+
                 }
             }
         }
