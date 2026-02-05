@@ -28,6 +28,169 @@ namespace GiocoSudoku
             }
         }
 
+        public void Gioca()
+        {
+            int rigaCursore = 0;
+            int colonnaCursore = 0;
+            bool giocoAttivo = true;
+
+            while (giocoAttivo)
+            {
+                Console.Clear();
+                StampaGrigliaCursor(rigaCursore, colonnaCursore);
+                Console.WriteLine("\n╔════════════════════════════════════════╗");
+                Console.WriteLine("║  Frecce: Naviga │ Numero: Inserisci   ║");
+                Console.WriteLine("║  0: Cancella    │ E: Esci dal gioco   ║");
+                Console.WriteLine("╚════════════════════════════════════════╝");
+
+                ConsoleKeyInfo key = Console.ReadKey(true);
+
+                if (key.Key == ConsoleKey.UpArrow)
+                {
+                    rigaCursore = (rigaCursore - 1 + 9) % 9;
+                }
+                else if (key.Key == ConsoleKey.DownArrow)
+                {
+                    rigaCursore = (rigaCursore + 1) % 9;
+                }
+                else if (key.Key == ConsoleKey.LeftArrow)
+                {
+                    colonnaCursore = (colonnaCursore - 1 + 9) % 9;
+                }
+                else if (key.Key == ConsoleKey.RightArrow)
+                {
+                    colonnaCursore = (colonnaCursore + 1) % 9;
+                }
+                else if (key.KeyChar >= '0' && key.KeyChar <= '9')
+                {
+                    int numero = int.Parse(key.KeyChar.ToString());
+
+                    if (!Matrice[rigaCursore, colonnaCursore].Modificabile)
+                    {
+                        Console.Beep();
+                        Console.WriteLine("\n❌ Questa cella non è modificabile!");
+                        System.Threading.Thread.Sleep(1500);
+                    }
+                    else
+                    {
+                        Matrice[rigaCursore, colonnaCursore].Valore = numero;
+                    }
+
+                    if (IsComplete())
+                    {
+                        Console.Clear();
+                        StampaGriglia();
+                        Console.WriteLine("\n╔════════════════════════════════════════╗");
+                        Console.WriteLine("║      🎉 HAI VINTO! 🎉                  ║");
+                        Console.WriteLine("║    Complimenti, hai risolto il Sudoku! ║");
+                        Console.WriteLine("╚════════════════════════════════════════╝");
+                        System.Threading.Thread.Sleep(2000);
+                        giocoAttivo = false;
+                    }
+                }
+                else if (key.Key == ConsoleKey.E)
+                {
+                    giocoAttivo = false;
+                }
+            }
+        }
+
+        private void StampaGrigliaCursor(int rigaCursore, int colonnaCursore)
+        {
+            Console.WriteLine("╔═══════╦═══════╦═══════╗");
+            for (int i = 0; i < 9; i++)
+            {
+                Console.Write("║ ");
+                for (int j = 0; j < 9; j++)
+                {
+                    int val = Matrice[i, j].Valore;
+                    string valStr = val == 0 ? "-" : val.ToString();
+
+                    if (i == rigaCursore && j == colonnaCursore)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        Console.BackgroundColor = ConsoleColor.Yellow;
+                        Console.Write(valStr);
+                        Console.ResetColor();
+                    }
+                    else if (val != 0 && !Matrice[i, j].Modificabile)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        Console.Write(valStr);
+                        Console.ResetColor();
+                    }
+                    else if (val != 0)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.Write(valStr);
+                        Console.ResetColor();
+                    }
+                    else
+                    {
+                        Console.Write(valStr);
+                    }
+
+                    Console.Write(" ");
+
+                    if ((j + 1) % 3 == 0 && j < 8) Console.Write("║ ");
+                }
+                Console.Write("║");
+                Console.WriteLine();
+
+                if ((i + 1) % 3 == 0 && i < 8)
+                {
+                    Console.WriteLine("╠═══════╬═══════╬═══════╣");
+                }
+            }
+            Console.WriteLine("╚═══════╩═══════╩═══════╝");
+        }
+
+        private bool IsComplete()
+        {
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    if (Matrice[i, j].Valore == 0)
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        private void StampaGriglia()
+        {
+            Console.WriteLine("╔═══════╦═══════╦═══════╗");
+            for (int i = 0; i < 9; i++)
+            {
+                Console.Write("║ ");
+                for (int j = 0; j < 9; j++)
+                {
+                    int val = Matrice[i, j].Valore;
+                    Console.ForegroundColor = Matrice[i, j].Modificabile ? ConsoleColor.Green : ConsoleColor.Cyan;
+                    Console.Write(val + " ");
+                    Console.ResetColor();
+
+                    if ((j + 1) % 3 == 0 && j < 8) Console.Write("║ ");
+                }
+                Console.Write("║");
+                Console.WriteLine();
+
+                if ((i + 1) % 3 == 0 && i < 8)
+                {
+                    Console.WriteLine("╠═══════╬═══════╬═══════╣");
+                }
+            }
+            Console.WriteLine("╚═══════╩═══════╩═══════╝");
+        }
+
+
+
+
+
+
+
+
         public void StringaGriglia()
         {
             
