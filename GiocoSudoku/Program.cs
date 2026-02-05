@@ -4,7 +4,8 @@
     {
         static void Main(string[] args)
         {
-            
+            Griglia griglia = new Griglia();
+            griglia.StringaGriglia();
         }
     }
 }
