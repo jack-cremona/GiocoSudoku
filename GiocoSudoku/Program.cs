@@ -4,9 +4,7 @@
     {
         static void Main(string[] args)
         {
-            Controllore controllore = new Controllore();
-            controllore.InizializzaMatrice();
-            controllore.ControllaSudoku();
+            Console.ReadKey();
         }
     }
 }
