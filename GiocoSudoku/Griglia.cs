@@ -1,4 +1,8 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Drawing.Diagrams;
+using Microsoft.Extensions.CommandLineUtils;
+using System;
+using Spectre.Console;
+using AnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace GiocoSudoku
 {
@@ -6,7 +10,15 @@ namespace GiocoSudoku
     {
         public Casella[,] Matrice = new Casella[9, 9];
         private int[] valoriIniziali = {
-            5, 3, 0, 0, 7, 0, 0, 0, 0, 6, 0, 0, 1, 9, 5, 0, 0, 0, 0, 9, 8, 0, 0, 0, 0, 6, 0, 8, 0, 0, 0, 6, 0, 0, 0, 3, 4, 0, 0, 8, 0, 3, 0, 0, 1, 7, 0, 0, 0, 2, 0, 0, 0, 6, 0, 6, 0, 0, 0, 0, 2, 8, 0, 0, 0, 0, 4, 1, 9, 0, 0, 5, 0, 0, 0, 0, 8, 0, 0, 7, 9
+            5, 3, 0, 0, 7, 0, 0, 0, 0,
+            6, 0, 0, 1, 9, 5, 0, 0, 0,
+            0, 9, 8, 0, 0, 0, 0, 6, 0,
+            8, 0, 0, 0, 6, 0, 0, 0, 3, 
+            4, 0, 0, 8, 0, 3, 0, 0, 1,
+            7, 0, 0, 0, 2, 0, 0, 0, 6,
+            0, 6, 0, 0, 0, 0, 2, 8, 0,
+            0, 0, 0, 4, 1, 9, 0, 0, 5,
+            0, 0, 0, 0, 8, 0, 0, 7, 9
         };
 
         public Griglia()
@@ -18,10 +30,11 @@ namespace GiocoSudoku
 
         public void Gioca()
         {
+            bool isExit = false;
             int r = 0, c = 0;
             string messaggioFeedback = "";
 
-            while (true)
+            while (isExit == false)
             {
                 Console.Clear();
                 StampaGriglia(r, c);
@@ -29,7 +42,14 @@ namespace GiocoSudoku
                 // Mostra eventuale messaggio di feedback dal controllo manuale
                 if (!string.IsNullOrEmpty(messaggioFeedback))
                 {
-                    Console.WriteLine(messaggioFeedback);
+                    if(messaggioFeedback.Contains("Attenzione") || messaggioFeedback.Contains("duplicati"))
+                    {
+                        AnsiConsole.MarkupLine($"[red]{messaggioFeedback}[/]");
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine($"[green]{messaggioFeedback}[/]");
+                    }
                     messaggioFeedback = ""; // Reset dopo la stampa
                 }
 
@@ -52,7 +72,7 @@ namespace GiocoSudoku
                     {
                         Console.Clear();
                         StampaGriglia(-1, -1);
-                        Console.WriteLine("\n🎉 COMPLIMENTI! HAI VINTO!");
+                        AnsiConsole.MarkupLine("[green]Congratulazioni! Hai risolto il Sudoku![/]");
                         break;
                     }
                 }
@@ -61,15 +81,19 @@ namespace GiocoSudoku
                 {
                     if (Controllore.IsValidPartial(Matrice))
                     {
-                        messaggioFeedback = "✅ Al momento non ci sono errori!";
+                        messaggioFeedback = "Al momento non ci sono errori!";
                     }
                     else
                     {
-                        Console.Beep();
-                        messaggioFeedback = "❌ Attenzione: ci sono dei numeri duplicati!";
+                        messaggioFeedback = "Attenzione: ci sono dei numeri duplicati!";
                     }
                 }
-                else if (key.Key == ConsoleKey.E) break;
+                else if (key.Key == ConsoleKey.E)
+                {
+                    Console.Clear();
+                    isExit = true;
+                    break;
+                }
             }
         }
 

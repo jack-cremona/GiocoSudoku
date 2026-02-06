@@ -1,4 +1,5 @@
 ﻿using System;
+using Spectre.Console;
 
 namespace GiocoSudoku
 {
@@ -8,31 +9,32 @@ namespace GiocoSudoku
         {
             while (true)
             {
-                string[] opzioni = { "Gioca", "Esci", "Fai giocare il bot" };
-                int scelta = 0;
-                bool confermato = false;
+                Console.Clear();
 
-                while (!confermato)
+                var banner = new FigletText("MENU SUDOKU")
                 {
-                    Console.Clear();
-                    Console.WriteLine("=== MENU SUDOKU ===\n");
-                    for (int i = 0; i < opzioni.Length; i++)
-                    {
-                        Console.WriteLine(i == scelta ? $"> {opzioni[i]} <" : $"  {opzioni[i]}");
-                    }
+                    Color = Color.White,
+                    Justification = Justify.Center
+                };
 
-                    var k = Console.ReadKey(true).Key;
-                    if (k == ConsoleKey.UpArrow) scelta = (scelta - 1 + 3) % 3;
-                    else if (k == ConsoleKey.DownArrow) scelta = (scelta + 1) % 3;
-                    else if (k == ConsoleKey.Enter) confermato = true;
-                }
+                AnsiConsole.Write(banner);
+
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("Seleziona un'opzione:")
+                        .AddChoices("Gioca", "Esci", "Fai giocare il bot"));
+
+                if (choice == "Esci")
+                    break;
 
                 Griglia g = new Griglia();
-                if (scelta == 0) g.Gioca();
-                else if (scelta == 2) g.Bot();
-                else break;
+                
+                if (choice == "Gioca") 
+                    g.Gioca();
+                else if (choice == "Fai giocare il bot") 
+                    g.Bot();
 
-                Console.WriteLine("\nPremi un tasto...");
+                Console.WriteLine("\nPremi un tasto per tornare al menu...");
                 Console.ReadKey();
             }
         }
